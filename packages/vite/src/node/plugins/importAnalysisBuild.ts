@@ -82,7 +82,8 @@ function preload(
   deps?: string[],
   importerUrl?: string,
 ) {
-  if (!deps || deps.length === 0) {
+  // @ts-expect-error __VITE_IS_MODERN__ will be replaced with boolean later
+  if (!__VITE_IS_MODERN__ || !deps || deps.length === 0) {
     return baseModule()
   }
 
@@ -183,10 +184,7 @@ export function buildImportAnalysisPlugin(config: ResolvedConfig): Plugin {
     : // If the base isn't relative, then the deps are relative to the projects `outDir` and the base
       // is appended inside __vitePreload too.
       `function(dep) { return ${JSON.stringify(config.base)}+dep }`
-  const preloadCode =
-    `const scriptRel = ${scriptRel};const assetsURL = ${assetsURL};const seen = {}; export const ${preloadMethod} = ` +
-    // Here the __VITE_IS_MODERN__ for tree-shake
-    `(__VITE_IS_MODERN__ && ${preload.toString()}) || (baseModule => { baseModule(); });`
+  const preloadCode = `const scriptRel = ${scriptRel};const assetsURL = ${assetsURL};const seen = {};export const ${preloadMethod} = ${preload.toString()}`
 
   return {
     name: 'vite:build-import-analysis',
